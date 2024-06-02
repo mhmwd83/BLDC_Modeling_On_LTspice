@@ -1,0 +1,33 @@
+* ********************************************************
+* BLDC motor modelling in LTspice
+* Created by Marcos Alonso, University of Oviedo, Spain
+* marcos@uniovi.es
+* For educational purposes only
+* Last update: May 4, 2022 
+* For information on this library, please visit:
+* https://www.youtube.com/c/MarcosAlonsoElectronics
+**********************************************************
+********************************************************************************************************
+* Subcircuit to generate BLDCM back emfs and hall sensor outputs
+********************************************************************************************************
+.subckt bemf a b c n thetat amp hc hb ha
+Ea a N value= {if(V(theta)<pi/6, V(amp)*V(theta)/(pi/6),if(V(theta)<5*pi/6, V(amp), 
++ if(V(theta)<7*pi/6, V(amp)-V(amp)*(V(theta)-5*pi/6)/(pi/6), if( V(theta)<11*pi/6, -V(amp), 
++ if(V(theta)<2*pi, -V(amp) + V(amp)*(V(theta)-11*pi/6)/(pi/6),0) ) ) ) )}
+Eb b N value={if(V(theta)<pi/2, -V(amp), if( V(theta)< 5*pi/6, -V(amp)+V(amp)*(V(theta)-3*pi/6)/(pi/6), 
++ if( V(theta)<9*pi/6, V(amp), if(V(theta)<11*pi/6, V(amp)-V(amp)*(V(theta)-9*pi/6)/(pi/6), 
++ if( V(theta)<2*pi, -V(amp), 0 ) ) ) ) )}
+Ec c N value={if(V(theta)<pi/6, V(amp), if( V(theta)<3*pi/6, V(amp)-V(amp)*(V(theta)-pi/6)/(pi/6), 
++ if(V(theta)<7*pi/6, -V(amp), if(V(theta)<9*pi/6, -V(amp)+V(amp)*(V(theta)-7*pi/6)/(pi/6), 
++ if( V(theta)<2*pi, V(amp), 0 ) ) ) ) ) }
+XUhc 0 ca hc comp Vhigh=5 Vlow=0
+Eca ca 0 value={V(c)-V(a)}
+XUhb 0 ab hb comp Vhigh=5 Vlow=0
+Eab ab 0 value={V(a)-V(b)}
+XUha bc 0 ha comp Vhigh=5 Vlow=0
+Ebc bc 0 value={V(b)-V(c)}
+Rin1 thetat 0 10Meg
+Rin2 amp 0 10Meg
+E1 theta 0 value={ ( V(thetat)/(2*pi) - floor( V(thetat)/(2*pi) ) )*2*pi}
+Rin4 theta 0 10Meg
+.ends bemf
